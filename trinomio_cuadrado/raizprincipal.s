@@ -1,8 +1,8 @@
 section .data
-msgIngresar: db "Ingrese A, B y C", 10, 0
 msgImaginarios: db "Los resultados son imaginarios", 10, 0
 fms: db "%s",0
-fmr: db "%lf",0
+fmr: db "%d",0
+pmr: db "%d",10,0
 a: dq 1
 b: dq 6
 c: dq 9
@@ -14,47 +14,18 @@ int64 resq 1
 section .text
 extern printf
 extern scanf
-extern raiz2
 global main
 
 main:
-	push rbp
-	mov rbp,rsp
-	sub rsp,48
-	push rbx
 
     mov rdi, a
     mov rsi, b
     mov rdx, c
     mov rcx, res
     xor rax, rax
-    call raiz2
     
-    cmp rax, 0
-    jnz resultados
-	
-    mov rax,0
-	mov rdi,fms
-	lea rsi,[rel msgImaginarios]
-	call printf WRT ..plt
-
-resultados:
-
-fin:
-    pop rbx
-    add rsp,48
-    mov rsp,rbp
-    pop rbp
-    mov rax, 60
-    mov rdi, 0
-    syscall
 
 raiz2:
-    push rbp
-    mov rbp, rsp
-    sub rsp, 48
-    push rbx
-
     mov rax, [rdi]
     mov rbx, [rdx]
     mul rbx
@@ -88,7 +59,7 @@ raiz2:
     xchg rax, rbx
     div rbx
 
-    mov [rdx], rax
+    mov [rcx], rax
 
     pop rax
     mov rbx, [rsi]
@@ -102,18 +73,35 @@ raiz2:
     xchg rax, rbx
     div rbx
 
-    add rdx, 8
-    mov [rdx], rax
-    sub rdx, 8
-    mov rax, rdx
+    mov [rcx + 1], rax
+    mov rax, rcx
     jmp final
 
 imaginarios:
     mov rax, 0
 
 final:
-    pop rbx
-    add rsp, 48
-    mov rsp, rbp
-    pop rbp
-    ret
+    cmp rax, 0
+    jnz resultados
+	
+    mov rax,0
+	mov rdi,fms
+	lea rsi,[rel msgImaginarios]
+	call printf WRT ..plt
+    jmp fin
+
+resultados:
+    mov rax,0
+	mov rdi,pmr
+	mov rsi,[rel res]
+	call printf WRT ..plt
+
+    mov rax,0
+	mov rdi,pmr
+	mov rsi,[rel res + 8]
+	call printf WRT ..plt
+fin:
+    mov rax, 60
+    mov rdi, 0
+    syscall
+
